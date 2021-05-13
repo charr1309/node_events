@@ -11,7 +11,7 @@ Instantiate a new server instance with createServer
 Inside the server request handler, listen for the ‘data’ event to be emitted, and pass in a callback function that pushes each ‘chunk’ into an array named ‘chunks’
 Listen for the request ReadStream ‘end’ event, and pass in a callback that contains a conditional statement (if/else)
 The conditional statement will check the request url and method, and if they are “POST” and “/newsletter_signup”, decode the chunks array with Buffer.concat().toString(), and use JSON.parse() on the result to access the request body values
-Next, emit a ‘signup’ event, and pass in the value to be used by your event listener callback (name + email for csv record)
+Next, emit a ‘signup’ event, and pass in the value to be used by your event listener callback (name + email is what is passed to the csv record)
 Write and end the response to the client
 
 PART 2

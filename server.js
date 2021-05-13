@@ -1,53 +1,58 @@
-const EventEmitter = require ('events');
-const path = require('path');
-const http = require('http');
-const  fs  = require('fs');
+const EventEmitter = require("events");
+const path = require("path");
+const http = require("http");
+const fs = require("fs");
 
 const port = 3000;
 
-const NewsLetter = new EventEmitter;
+const NewsLetter = new EventEmitter();
 
 let chunks = [];
 
-function serverRequestHandler(req, res){
-    req.on('data', function(chunk) {
-        chunks.push(chunk);
-    })
-    req.on("end", () => {
-        const {url, method} = req;
-        const body = Buffer.concat(chunks).toString();
-
-        if(url === "/newsletter_signup" && method === "POST") {
-            //on is listening for the emitter
-            NewsLetter.emit("signup",JSON.parse(body));//parse to use . notation
-            res.writeHead(200, { "Content-Type": "text/html"});
-            res.write(url + method);
-            res.end();
-        } else{
-            res.writeHead(404, { "Content-type": "text/html"})
-            res.write("Your request is not found");
-            res.end();
-        }
-    })           
+function serverRequestHandler(req, res) {
+  req.on("data", function (chunk) {
+    //--->listen for data event to be emitted
+    chunks.push(chunk);
+  });
+  req.on("end", () => {
+    //--->request ReadStream end event
+    const { url, method } = req;
+    const body = Buffer.concat(chunks).toString();
+    //#13-->check url and method. if true decode
+    if (url === "/newsletter_signup" && method === "POST") {
+      //#14-->emit a signup event value passed is signup which
+      //matches the Newsletter.on listener
+      NewsLetter.emit("signup", JSON.parse(body)); //parse to use . notation
+      res.writeHead(200, { "Content-Type": "text/html" });
+      res.write(url + method);
+      res.end();
+    } else {
+      //-->if method = "GET" message not found
+      res.writeHead(404, { "Content-type": "text/html" });
+      res.write("Your request is not found");
+      res.end();
+    }
+  });
 }
-
-NewsLetter.on('signup', (contact) => {//from JSON.parse(body)
-    //need to be a string or a buffer
-    fs.appendFile("NewsLetter.csv", `${contact.name},${contact.email}`, (err) => {//all callback functions
-                                                                                  //that take in data 
-                                                                                  //require an err function
-    if(err) {
-            console.log(err);
-        }
-    });
-})
+//on is listening for the NewsLetter emit in if statement
+NewsLetter.on("signup", (contact) => {
+  //from JSON.parse(body)
+  //data can only be a string or a buffer in the fs.append
+  //all callback functions that take in data require an err function
+  fs.appendFile("NewsLetter.csv", `${contact.name},${contact.email}`, (err) => {
+//if an error is thrown it will always break or stop the server in postman or anywhere else
+    if (err) {
+      console.log(err);
+    }
+  });
+});
 
 http
-    .createServer(serverRequestHandler)
-    .listen(port, console.log("Server listening on port: " + port));
+  .createServer(serverRequestHandler)
+  .listen(port, console.log("Server listening on port: " + port));
 
-    //if an error is thrown it will always break or stop the server in post man or anywhere else
-    // Windows PowerShell
+
+// Windows PowerShell
 // Copyright (C) Microsoft Corporation. All rights reserved.
 
 // Try the new cross-platform PowerShell https://aka.ms/pscore6
@@ -65,18 +70,16 @@ http
 // Server listening on port: 3000
 // undefined:1
 
-
-
 // SyntaxError: Unexpected end of JSON input
 //     at JSON.parse (<anonymous>)
 //     at IncomingMessage.<anonymous> (C:\Users\ceh71\repos\node_events\server.js:22:43)
 //     at IncomingMessage.emit (events.js:327:22)
 //     at endReadableNT (internal/streams/readable.js:1327:12)
 //     at processTicksAndRejections (internal/process/task_queues.js:80:21)
-// PS C:\Users\ceh71\repos\node_events> node server.js     
+// PS C:\Users\ceh71\repos\node_events> node server.js
 // Server listening on port: 3000
 // C:\Users\ceh71\repos\node_events\server.js:36
-//     fs.appendFile("NewsLetter.csv", `${contact.name},${contact.email}`, (err) => {//all callback functions      
+//     fs.appendFile("NewsLetter.csv", `${contact.name},${contact.email}`, (err) => {//all callback functions
 //     ^
 
 // ReferenceError: fs is not defined
